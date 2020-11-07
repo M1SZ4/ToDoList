@@ -6,7 +6,6 @@ from datetime import datetime, timedelta
 
 # create database file
 engine = create_engine('sqlite:///todo.db?check_same_thread=False')
-# model class that describes the table in the database.
 Base = declarative_base()
 
 
@@ -34,11 +33,11 @@ def show_today_tasks():
     today = datetime.today()
     print("Today " + str(today.day) + " " + today.strftime('%b') + ":")
     rows = session.query(Table).filter(Table.deadline == today.date()).all()
-    if len(rows) == 0:
-        print("Nothing to do!")
-    else:
+    if rows:
         for i, row in enumerate(rows):
             print(str(i+1) + ". " + row.task)
+    else:
+        print("Nothing to do!")
 
 
 def show_week_tasks():
@@ -48,41 +47,40 @@ def show_week_tasks():
         next_day = today + timedelta(days=i)
         print(days_of_week[next_day.weekday()], next_day.day, next_day.strftime('%b') + ":")
         rows = session.query(Table).filter(Table.deadline == next_day.date()).all()
-        if len(rows) == 0:
-            print("Nothing to do!")
-        else:
+        if rows:
             for i, row in enumerate(rows):
                 print(str(i + 1) + ". " + row.task)
+        else:
+            print("Nothing to do!")
         print()
 
 
 def show_all_tasks():
     rows = session.query(Table).order_by(Table.deadline).all()
     print("All tasks:")
-    if len(rows) == 0:
-        print("Nothing to do!")
-    else:
+    if rows:
         for i, row in enumerate(rows):
             print(str(i + 1) + ". " + row.task + ". " + str(row.deadline.day) + " " + row.deadline.strftime('%b'))
+    else:
+        print("Nothing to do!")
+    print()
 
 
 def show_missed_tasks():
     rows = session.query(Table).filter(Table.deadline < datetime.today().date()).order_by(Table.deadline).all()
     print("Missed tasks:")
-    if len(rows) == 0:
-        print("Nothing is missed!")
-    else:
+    if rows:
         for i, row in enumerate(rows):
             print(str(i + 1) + ". " + row.task + ". " + str(row.deadline.day) + " " + row.deadline.strftime('%b'))
+    else:
+        print("Nothing to do!")
     print()
 
 
 def delete_task():
     print("Choose the number of the task you want to delete:")
     rows = session.query(Table).order_by(Table.deadline).all()
-    if len(rows) == 0:
-        print("Nothing to delete")
-    else:
+    if rows:
         for i, row in enumerate(rows):
             print(str(i + 1) + ". " + row.task + ". " + str(row.deadline.day) + " " + row.deadline.strftime('%b'))
 
@@ -91,6 +89,8 @@ def delete_task():
         session.delete(specific_row)
         session.commit()
         print("The task has been deleted!")
+    else:
+        print("Nothing to delete")
 
 
 if __name__ == '__main__':
